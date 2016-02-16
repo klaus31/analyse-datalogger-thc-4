@@ -1,13 +1,9 @@
 {
-  "name": "storyvars",
+  "name": "analyse-datalogger-thc-4",
   "version": "0.1.0",
-  "description": "command line glue for using handlebars in local files",
+  "description": "who cares",
   "devDependencies": {
     "handlebars": "4.0.5",
     "moment": "2.11.2"
-  },
-  "scripts": {
-    "build": "node compile.js"
-  },
-  "author": "Daniel Oltmanns"
+  }
 }
