@@ -32,7 +32,7 @@ var createMessung = function (dataline) {
 
 var ausgabe = function (result) {
   var handlebars = require('handlebars')
-  fs.readFile('auswertung.tpl', 'utf8', function (err, source) {
+  fs.readFile(__dirname + '/auswertung.tpl', 'utf8', function (err, source) {
     var template = handlebars.compile(source)
     console.info(template(result))
   })
