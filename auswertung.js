@@ -1,4 +1,6 @@
 var fs = require('fs')
+var moment = require('moment');
+var handlebars = require('handlebars')
 
 function usageAndExit() {
   console.info('node auswertung.js directory');
@@ -8,12 +10,6 @@ function usageAndExit() {
 if(process.argv.length != 3) usageAndExit();
 
 var BASEDIR = process.argv[2] + '/';
-
-var result = {
-  datum: false,
-  temperatur: false,
-  luftfeuchtigkeit: false
-}
 
 var createMessung = function (dataline) {
   var messwerte = dataline.trim().split(/[ ]+/)
@@ -30,12 +26,18 @@ var createMessung = function (dataline) {
   return messung
 }
 
-var ausgabe = function (result) {
-  var handlebars = require('handlebars')
-  fs.readFile(__dirname + '/auswertung.tpl', 'utf8', function (err, source) {
+var ausgabeAlleMessungen = function (result) {
+  ausgabe(result, 'auswertung-all.tpl')
+}
+var ausgabe = function (result, tpl) {
+  fs.readFile(__dirname + '/' + tpl, 'utf8', function (err, source) {
     var template = handlebars.compile(source)
     console.info(template(result))
   })
+}
+
+var ausgabeWeek = function (result) {
+  ausgabe(result, 'auswertung-week.tpl')
 }
 
 var isStartOfLueftung = function (currentMessung, messungZeiger, prozentUnterschied) {
@@ -46,8 +48,6 @@ var isStartOfLueftung = function (currentMessung, messungZeiger, prozentUntersch
 var auswertung = function (err, data) {
   var datalines = data.split('\r\n')
   var i = datalines.length
-  var temperaturen = []
-  var luftfeuchtigkeiten = []
   var messungen = []
   while(i--) {
     var messung = createMessung(datalines[i])
@@ -56,6 +56,25 @@ var auswertung = function (err, data) {
     }
     // array sammeln
     messungen.push(messung)
+  }
+  ausgabeAlleMessungen(getResult(messungen))
+  splitMessungenPerWeeks(messungen).forEach(function(resultsWeek){
+    ausgabeWeek(getResult(resultsWeek));
+  })
+}
+
+var getResult = function(messungen) {
+  var result = {
+    datum: false,
+    temperatur: false,
+    luftfeuchtigkeit: false
+  }
+
+  var i = messungen.length
+  var temperaturen = []
+  var luftfeuchtigkeiten = []
+  while(i--) {
+    var messung = messungen[i];
     temperaturen.push(messung.temperatur)
     luftfeuchtigkeiten.push(messung.luftfeuchtigkeit)
     // messraum
@@ -128,7 +147,21 @@ var auswertung = function (err, data) {
   result.luftfeuchtigkeit.avg = luftfeuchtigkeiten.reduce(function (a, b) { return a + b; }) / luftfeuchtigkeiten.length
   result.messungen = messungen
   result.lueftungen = lueftungen
-  ausgabe(result)
+  return result;
+}
+
+var splitMessungenPerWeeks = function(messungen) {
+  var splittetMessungen = {};
+  messungen.forEach(function(messung) {
+    var weekid = 'id' + moment(messung.datum.value).format('YYYYww');
+    if(!splittetMessungen[weekid]) splittetMessungen[weekid] = [];
+    splittetMessungen[weekid].push(messung);
+  });
+  var results = [];
+  Object.getOwnPropertyNames(splittetMessungen).forEach(function(weekid) {
+    results.push(splittetMessungen[weekid]);
+  });
+  return results;
 }
 
 fs.readdir(BASEDIR, function (err, filenames) {
