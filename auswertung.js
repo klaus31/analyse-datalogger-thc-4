@@ -3,13 +3,20 @@ var moment = require('moment');
 var handlebars = require('handlebars')
 
 function usageAndExit() {
-  console.info('node auswertung.js directory');
+  console.info('node auswertung.js txtfile');
   process.exit(1);
 }
 
 if(process.argv.length != 3) usageAndExit();
 
-var BASEDIR = process.argv[2] + '/';
+var TXTFILE = process.argv[2];
+
+fs.access(TXTFILE, fs.R_OK, function(err) {
+  if(err) {
+    console.error('no access to ' + TXTFILE);
+    usageAndExit();
+  }
+});
 
 var createMessung = function (dataline) {
   var messwerte = dataline.trim().split(/[ ]+/)
@@ -41,7 +48,7 @@ var ausgabeWeek = function (result) {
 }
 
 var isStartOfLueftung = function (currentMessung, messungZeiger, prozentUnterschied) {
-  prozentUnterschied = prozentUnterschied || 2
+  prozentUnterschied = prozentUnterschied || 3
   return currentMessung.luftfeuchtigkeit + prozentUnterschied < messungZeiger.luftfeuchtigkeit
 }
 
@@ -155,22 +162,17 @@ var splitMessungenPerWeeks = function(messungen) {
   messungen.forEach(function(messung) {
     var weekid = 'id' + moment(messung.datum.value).format('YYYYww');
     if(!splittetMessungen[weekid]) splittetMessungen[weekid] = [];
+    messung.weekid = weekid;
     splittetMessungen[weekid].push(messung);
   });
   var results = [];
   Object.getOwnPropertyNames(splittetMessungen).forEach(function(weekid) {
     results.push(splittetMessungen[weekid]);
   });
+  results.sort(function (r1, r2) {
+    return r1.weekid < r2.weekid ? 1 : -1
+  })
   return results;
 }
 
-fs.readdir(BASEDIR, function (err, filenames) {
-  if (err) throw err
-  var i = 0
-  while(i++ < filenames.length) {
-    var filename = filenames[i];
-    if (filename && filename.match(/^.+\.txt$/)) {
-      fs.readFile(BASEDIR + filename, 'utf8', auswertung)
-    }
-  }
-})
+fs.readFile(TXTFILE, 'utf8', auswertung)

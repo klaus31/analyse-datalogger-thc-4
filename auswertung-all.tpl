@@ -20,13 +20,13 @@ Gemessen : {{temperatur.min.datum.day}} {{temperatur.min.datum.time}}
 Luftfeuchtigkeit
 ----------------
 
-Maximum  : {{luftfeuchtigkeit.max.luftfeuchtigkeit}} %
+Maximum  : {{luftfeuchtigkeit.max.luftfeuchtigkeit}} %RH
 Gemessen : {{luftfeuchtigkeit.max.datum.day}} {{luftfeuchtigkeit.max.datum.time}}
 
-Minimum  : {{luftfeuchtigkeit.min.luftfeuchtigkeit}} %
+Minimum  : {{luftfeuchtigkeit.min.luftfeuchtigkeit}} %RH
 Gemessen : {{luftfeuchtigkeit.min.datum.day}} {{luftfeuchtigkeit.min.datum.time}}
 
-ø        : {{luftfeuchtigkeit.avg}} %
+ø        : {{luftfeuchtigkeit.avg}} %RH
 
 Lüftungen
 ---------
@@ -35,5 +35,5 @@ Anzahl    : {{lueftungen.messungen.length}}
 ø pro Tag : {{lueftungen.avgProTag}}
 
 {{#lueftungen.messungen}}
-  {{datum.day}} {{datum.time}} {{luftfeuchtigkeit}} %
+  {{datum.day}} {{datum.time}} {{luftfeuchtigkeit}} %RH
 {{/lueftungen.messungen}}
